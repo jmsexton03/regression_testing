@@ -397,7 +397,13 @@ def run(string, stdin=False, outfile=None, store_command=False, env=None,
     p0 = subprocess.Popen(prog, stdin=sin, stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE, env=env, cwd=cwd)
 
-    stdout0, stderr0 = p0.communicate()
+    try:
+        stdout0, stderr0 = p0.communicate(timeout=1800)
+    except TimeoutExpired:
+        log.fail("  ERROR: took more than 1800 seconds")
+        p0.kill()
+        stdout0, stderr0 = p0.communicate()
+
     if stdin: p0.stdin.close()
     rc = p0.returncode
     p0.stdout.close()
